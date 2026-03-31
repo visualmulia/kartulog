@@ -86,39 +86,64 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
 
   // AI Appraisal via Claude API route
   async function handleEstimateAI() {
-    if (!form.name || !form.game) {
-      showToast("Nama kartu dan game harus ada!", "error");
+  if (!form.name || !form.game) {
+    showToast("Nama kartu dan game harus ada!", "error");
+    return;
+  }
+  setEstimatingAI(true);
+  try {
+    // Coba real-time price dulu via card-price API
+    const priceRes = await fetch("/api/card-price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name,
+        game: form.game,
+        setName: form.expansion,
+        cardNumber: form.cardNumber,
+      }),
+    });
+    const priceData = await priceRes.json();
+
+    if (priceData.found && priceData.bestEstimateIDR > 0) {
+      updateForm("estimatedValue", priceData.bestEstimateIDR);
+      const source = form.game === "Pokémon TCG" ? "TCGdex"
+        : form.game === "Yu-Gi-Oh!" ? "YGOPRODeck"
+        : form.game === "Magic: The Gathering" ? "Scryfall"
+        : "database";
+      showToast(`✅ Harga real dari ${source}: Rp ${priceData.bestEstimateIDR.toLocaleString("id")}!`);
       return;
     }
-    setEstimatingAI(true);
-    try {
-      const response = await fetch("/api/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          game: form.game,
-          expansion: form.expansion,
-          cardNumber: form.cardNumber,
-          rarity: form.rarity,
-          condition: form.condition,
-          gradingAgency: form.gradingAgency,
-          gradeScore: form.gradeScore,
-        }),
-      });
-      const data = await response.json();
-      if (data.value && parseInt(data.value) > 0) {
-        updateForm("estimatedValue", parseInt(data.value));
-        showToast("Estimasi AI berhasil! 🤖✨");
-      } else {
-        showToast("AI tidak bisa menaksir kartu ini.", "error");
-      }
-    } catch {
-      showToast("Gagal memanggil AI.", "error");
-    } finally {
-      setEstimatingAI(false);
+
+    // Fallback ke Claude AI
+    const aiRes = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name,
+        game: form.game,
+        expansion: form.expansion,
+        cardNumber: form.cardNumber,
+        rarity: form.rarity,
+        condition: form.condition,
+        gradingAgency: form.gradingAgency,
+        gradeScore: form.gradeScore,
+      }),
+    });
+    const aiData = await aiRes.json();
+
+    if (aiData.value && parseInt(aiData.value) > 0) {
+      updateForm("estimatedValue", parseInt(aiData.value));
+      showToast("🤖 Estimasi AI (data tidak ditemukan di database)", "success");
+    } else {
+      showToast("Tidak bisa menaksir kartu ini.", "error");
     }
+  } catch {
+    showToast("Gagal mengambil data harga.", "error");
+  } finally {
+    setEstimatingAI(false);
   }
+}
 
   // Save edit
   async function handleSave() {
