@@ -148,6 +148,50 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Portfolio Link */}
+<div style={{
+  background: "linear-gradient(135deg, #0B132B, #111D3E)",
+  border: "1px solid #1C2A4A",
+  borderRadius: 16,
+  padding: "20px 24px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 16,
+  marginBottom: 32,
+  flexWrap: "wrap"
+}}>
+  <div>
+    <div style={{ fontSize: 11, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+      Link Brankas Publikmu
+    </div>
+    <div style={{ fontSize: 14, color: "rgba(255,255,255,.8)", fontFamily: "monospace" }}>
+      kartulog.vercel.app/p/{profile.username}
+    </div>
+  </div>
+  <button
+    onClick={async () => {
+      await navigator.clipboard.writeText(`https://kartulog.vercel.app/p/${profile.username}`);
+      // reuse toast kalau ada, atau pakai alert sementara
+      alert("Link disalin! 🔗");
+    }}
+    style={{
+      padding: "8px 18px",
+      borderRadius: 8,
+      background: "rgba(255,255,255,.1)",
+      border: "1px solid rgba(255,255,255,.15)",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      whiteSpace: "nowrap",
+      flexShrink: 0,
+    }}
+  >
+    🔗 Salin Link
+  </button>
+</div>
+
         <div className="tab-menu">
           <div className={`tab-item ${activeTab === "koleksi" ? "active" : ""}`} onClick={() => setActiveTab("koleksi")}>Koleksi Saya</div>
           <div className={`tab-item ${activeTab === "feed" ? "active" : ""}`} onClick={() => setActiveTab("feed")}>TCG Feed 🌟</div>
