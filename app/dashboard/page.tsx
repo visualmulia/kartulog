@@ -165,7 +165,7 @@ export default function DashboardPage() {
             ) : cards.length > 0 ? (
               <div className="cards-grid">
                 {cards.map(card => (
-                  <Link href={`#`} key={card.id} className="card-item">
+                  <Link href={`/collection/${card.id}`} key={card.id} className="card-item">
                     <div className="card-image-wrap">
                       {card.photoFront ? (
                         <img src={card.photoFront} alt={card.name} className="card-image" />
